@@ -1,5 +1,5 @@
-name: "ejson action"
-description: "Execute encryption and decryption of json files using ejson"
+name: "json-diff-action"
+description: "Check for differences between at least 2 json files and show what member is missing by each file."
 
 branding:
   icon: database
