@@ -1,7 +1,7 @@
 {
   "name": "json-diff-action",
   "type": "module",
-  "version": "0.0.4",
+  "version": "0.1.0",
   "description": "Simple action that compare the keys of different json files and return what keys are missing between each other",
   "scripts": {
     "lint": "npx eslint --fix .",

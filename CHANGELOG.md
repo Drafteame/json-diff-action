@@ -1,3 +1,8 @@
+## v0.1.0 (2023-11-22)
+
+
+- feat: add ignore file configuration (#1)
+
 ## v0.0.4 (2023-11-22)
 
 
