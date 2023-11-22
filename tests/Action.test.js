@@ -37,6 +37,8 @@ describe("Action core functions", () => {
     const searchPath = ``;
     const searchPattern = ``;
 
+    fsStub.existsSync.withArgs(".json-diff-ignore.json").returns(false);
+
     try {
       new Action(files, searchPath, searchPattern);
     } catch (e) {
@@ -54,6 +56,7 @@ describe("Action core functions", () => {
     const searchPath = ``;
     const searchPattern = ``;
 
+    fsStub.existsSync.withArgs(".json-diff-ignore.json").returns(false);
     fsStub.existsSync.returns(true);
 
     try {
@@ -76,6 +79,7 @@ describe("Action core functions", () => {
     const searchPath = ``;
     const searchPattern = ``;
 
+    fsStub.existsSync.withArgs(".json-diff-ignore.json").returns(false);
     fsStub.existsSync.returns(true);
 
     try {
@@ -98,6 +102,7 @@ describe("Action core functions", () => {
     const searchPath = ``;
     const searchPattern = ``;
 
+    fsStub.existsSync.withArgs(".json-diff-ignore.json").returns(false);
     fsStub.existsSync.withArgs("some/path/to/file1.json").returns(true);
     fsStub.existsSync.withArgs("some/path/to/file2.json").returns(false);
 
@@ -119,6 +124,7 @@ describe("Action core functions", () => {
     const searchPath = ``;
     const searchPattern = ``;
 
+    fsStub.existsSync.withArgs(".json-diff-ignore.json").returns(false);
     fsStub.existsSync.returns(true);
 
     try {
@@ -137,6 +143,7 @@ describe("Action core functions", () => {
     const searchPath = `some/search/folder`;
     const searchPattern = ``;
 
+    fsStub.existsSync.withArgs(".json-diff-ignore.json").returns(false);
     fsStub.existsSync.withArgs(searchPath).returns(false);
 
     try {
@@ -156,6 +163,7 @@ describe("Action core functions", () => {
     const searchPath = `some/search/folder`;
     const searchPattern = ``;
 
+    fsStub.existsSync.withArgs(".json-diff-ignore.json").returns(false);
     fsStub.existsSync.withArgs(searchPath).returns(true);
     isDirectoryStub.returns(false);
 
@@ -176,6 +184,7 @@ describe("Action core functions", () => {
     const searchPath = `some/search/folder`;
     const searchPattern = ``;
 
+    fsStub.existsSync.withArgs(".json-diff-ignore.json").returns(false);
     fsStub.existsSync.withArgs(searchPath).returns(true);
     isDirectoryStub.returns(true);
 
@@ -203,6 +212,7 @@ describe("Action core functions", () => {
     const searchPath = `some/search/folder`;
     const searchPattern = `json$`;
 
+    fsStub.existsSync.withArgs(".json-diff-ignore.json").returns(false);
     fsStub.existsSync.withArgs(searchPath).returns(true);
     isDirectoryStub.returns(true);
 
@@ -228,6 +238,7 @@ describe("Action core functions", () => {
     const searchPath = `/some/search/folder/`;
     const searchPattern = `json$`;
 
+    fsStub.existsSync.withArgs(".json-diff-ignore.json").returns(false);
     fsStub.existsSync.withArgs(searchPath).returns(true);
     isDirectoryStub.returns(true);
 
@@ -255,6 +266,7 @@ describe("Action core functions", () => {
     const searchPath = `/some/search/folder/`;
     const searchPattern = `json$`;
 
+    fsStub.existsSync.withArgs(".json-diff-ignore.json").returns(false);
     fsStub.existsSync.withArgs(searchPath).returns(true);
     isDirectoryStub.returns(true);
 
@@ -311,6 +323,7 @@ describe("Action core functions", () => {
     const searchPath = `/some/search/folder/`;
     const searchPattern = `json$`;
 
+    fsStub.existsSync.withArgs(".json-diff-ignore.json").returns(false);
     fsStub.existsSync.withArgs(searchPath).returns(true);
     isDirectoryStub.returns(true);
 
@@ -366,6 +379,7 @@ describe("Action core functions", () => {
     const searchPath = `/some/search/folder/`;
     const searchPattern = `json$`;
 
+    fsStub.existsSync.withArgs(".json-diff-ignore.json").returns(false);
     fsStub.existsSync.withArgs(searchPath).returns(true);
     isDirectoryStub.returns(true);
 
@@ -414,6 +428,164 @@ describe("Action core functions", () => {
       expect(JSON.stringify(missing)).to.be.equal(JSON.stringify(expected));
     } catch (e) {
       expect.fail(`Error: ${e.message}`);
+    }
+  });
+
+  it("Should load default ignore configuration", () => {
+    const files = `
+      some/path/to/file1.json
+      some/path/to/file2.json
+    `;
+    const searchPath = ``;
+    const searchPattern = ``;
+
+    let ignoreConfig = [
+      {
+        pattern: "file1\\.json",
+        ignoreKeys: ["key1", "key2"],
+      },
+      {
+        pattern: "file2\\.json",
+        ignoreKeys: ["key11", "key22"],
+      },
+    ];
+
+    fsStub.existsSync.withArgs(".json-diff-ignore.json").returns(true);
+
+    fsStub.readFileSync
+      .withArgs(".json-diff-ignore.json", {
+        encoding: "utf-8",
+      })
+      .returns(JSON.stringify(ignoreConfig));
+
+    fsStub.existsSync.returns(true);
+
+    try {
+      const action = new Action(files, searchPath, searchPattern);
+
+      expect(action.getFileList()).to.contains("some/path/to/file1.json");
+      expect(action.getFileList()).to.contains("some/path/to/file2.json");
+
+      expect(JSON.stringify(action.getIgnoreRules())).to.be.equal(
+        JSON.stringify(ignoreConfig),
+      );
+    } catch (e) {
+      expect.fail(`Error: ${e.message}`);
+      return;
+    }
+  });
+
+  it("Should load custom path for ignore file", () => {
+    const files = `
+      some/path/to/file1.json
+      some/path/to/file2.json
+    `;
+    const searchPath = ``;
+    const searchPattern = ``;
+    const ignoreFile = `path/to/.json-diff-ignore.json`;
+
+    let ignoreConfig = [
+      {
+        pattern: "file1\\.json",
+        ignoreKeys: ["key1", "key2"],
+      },
+      {
+        pattern: "file2\\.json",
+        ignoreKeys: ["key11", "key22"],
+      },
+    ];
+
+    fsStub.existsSync.withArgs(ignoreFile).returns(true);
+
+    fsStub.readFileSync
+      .withArgs(ignoreFile, {
+        encoding: "utf-8",
+      })
+      .returns(JSON.stringify(ignoreConfig));
+
+    fsStub.existsSync.returns(true);
+
+    try {
+      const action = new Action(files, searchPath, searchPattern, ignoreFile);
+
+      expect(action.getFileList()).to.contains("some/path/to/file1.json");
+      expect(action.getFileList()).to.contains("some/path/to/file2.json");
+
+      expect(JSON.stringify(action.getIgnoreRules())).to.be.equal(
+        JSON.stringify(ignoreConfig),
+      );
+    } catch (e) {
+      expect.fail(`Error: ${e.message}`);
+      return;
+    }
+  });
+
+  it("Should ignore keys if found on ignore configuration", () => {
+    const files = `
+      some/path/to/file1.json
+      some/path/to/file2.json
+    `;
+    const searchPath = ``;
+    const searchPattern = ``;
+    const ignoreFile = `path/to/.json-diff-ignore.json`;
+
+    let ignoreConfig = [
+      {
+        pattern: "file1\\.json",
+        ignoreKeys: ["key1"],
+      },
+      {
+        pattern: "file2\\.json",
+        ignoreKeys: ["key2"],
+      },
+    ];
+
+    fsStub.existsSync.withArgs(ignoreFile).returns(true);
+
+    fsStub.readFileSync
+      .withArgs(ignoreFile, {
+        encoding: "utf-8",
+      })
+      .returns(JSON.stringify(ignoreConfig));
+
+    fsStub.existsSync.returns(true);
+
+    let readOpts = { encoding: "utf-8" };
+
+    fsStub.readFileSync.withArgs("some/path/to/file1.json", readOpts).returns(
+      JSON.stringify({
+        common: 1,
+        missing1: "some",
+        missing2: "some",
+        key2: "asd",
+      }),
+    );
+
+    fsStub.readFileSync.withArgs("some/path/to/file2.json", readOpts).returns(
+      JSON.stringify({
+        common: 1,
+        missing1: "some",
+        missing2: "some",
+        key1: "asd",
+      }),
+    );
+
+    try {
+      const action = new Action(files, searchPath, searchPattern, ignoreFile);
+
+      expect(action.getFileList()).to.contains("some/path/to/file1.json");
+      expect(action.getFileList()).to.contains("some/path/to/file2.json");
+
+      expect(JSON.stringify(action.getIgnoreRules())).to.be.equal(
+        JSON.stringify(ignoreConfig),
+      );
+
+      const missing = action.run();
+
+      expect(JSON.stringify(missing)).to.be.equal(JSON.stringify({}));
+    } catch (e) {
+      expect.fail(`Error: ${e.message}`);
+      return;
     }
   });
 });

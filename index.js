@@ -7,6 +7,7 @@ const main = () => {
     core.getInput("files"),
     core.getInput("search_path"),
     core.getInput("search_pattern"),
+    core.getInput("ignore_file"),
   );
 
   try {

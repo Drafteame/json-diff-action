@@ -1,6 +1,7 @@
 import lodash from "lodash";
 import fs from "fs";
 import path from "path";
+import core from "@actions/core";
 
 import {
   NotEnoughFiles,
@@ -31,12 +32,24 @@ export default class Action {
   #searchPattern;
 
   /**
+   * Map with rules to ignore specified keys on specific files that match one or more patterns
+   * @type {Array<Object>}
+   */
+  #ignoreRules;
+
+  /**
+   * Object with the loaded ignore keys by file
+   * @type {Object}
+   */
+  #ignoreKeysByFile;
+
+  /**
    * Final list of files after initial validations
    * @type {Array<string>}
    */
   #fileList;
 
-  constructor(files, searchPath, searchPattern) {
+  constructor(files, searchPath, searchPattern, ignoreFile) {
     this.#files = files;
     this.#searchPath = searchPath;
 
@@ -45,6 +58,9 @@ export default class Action {
     if (!lodash.isEmpty(searchPattern)) {
       this.#searchPattern = searchPattern;
     }
+
+    this.#ignoreRules = this.#getIgnoreRules(ignoreFile);
+    this.#ignoreKeysByFile = {};
 
     this.#fileList = this.#validateInputs();
   }
@@ -56,6 +72,15 @@ export default class Action {
    */
   getFileList() {
     return this.#fileList;
+  }
+
+  /**
+   * Return the loaded ignore rules.
+   *
+   * @returns {Array<Object>}
+   */
+  getIgnoreRules() {
+    return this.#ignoreRules;
   }
 
   /**
@@ -94,6 +119,10 @@ export default class Action {
 
         keysFile2
           .filter((key) => {
+            if (this.#keyShouldBeIgnored(file1, key)) {
+              return false;
+            }
+
             const notInKeys1 = !keysFile1.includes(key);
             const notInMissing = !missing.includes(key);
 
@@ -236,5 +265,72 @@ export default class Action {
     const newPath = path.join(path.dirname(normalizedPath), lastSegment);
 
     return newPath;
+  }
+
+  /**
+   * Return ignore file configuration to apply on checks
+   *
+   * @param {string} ignoreFile Path to the specified ignore file
+   *
+   * @return {Array<Object>}
+   */
+  #getIgnoreRules(ignoreFile) {
+    let file = ".json-diff-ignore.json";
+
+    if (!lodash.isEmpty(ignoreFile)) {
+      file = ignoreFile;
+    }
+
+    if (!fs.existsSync(file)) {
+      return [];
+    }
+
+    const content = fs.readFileSync(file, { encoding: "utf-8" });
+
+    try {
+      return JSON.parse(content);
+    } catch (e) {
+      core.info(
+        `Error reading ignore file from '${file}', no rules will be applied...'`,
+      );
+      return [];
+    }
+  }
+
+  /**
+   * Validate if a given key should be ignored or not by the given file.
+   *
+   * @param {string} file File that should ignore or not the given key if not present on it.
+   * @param {string} key Key that should be ignored or not by the file.
+   *
+   * @returns {boolean}
+   */
+  #keyShouldBeIgnored(file, key) {
+    if (file in this.#ignoreKeysByFile) {
+      return this.#ignoreKeysByFile[file].includes(key);
+    }
+
+    let keysToIgnore = [];
+
+    this.#ignoreRules.forEach((rule) => {
+      const pattern = rule.pattern || null;
+      const keys = rule.ignoreKeys || [];
+
+      if (lodash.isEmpty(pattern) || keys.length === 0) {
+        return;
+      }
+
+      const regexp = new RegExp(pattern);
+
+      if (regexp.test(file)) {
+        keys.forEach((item) => {
+          keysToIgnore.push(item);
+        });
+      }
+    });
+
+    this.#ignoreKeysByFile[file] = keysToIgnore;
+
+    return keysToIgnore.includes(key);
   }
 }
