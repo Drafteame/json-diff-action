@@ -1,0 +1,22 @@
+name: "ejson action"
+description: "Execute encryption and decryption of json files using ejson"
+
+branding:
+  icon: database
+  color: blue
+
+inputs:
+  files:
+    description: List of JSON file paths to check between each other. Should be at least 2 files.
+    required: false
+  search_path:
+    description: Path to a folder that will be inspected to search al JSON files and compere each other.
+    required: false
+  search_pattern:
+    description: Regular expression used on search path to find desired files.
+    required: false
+    default: '\\.json$'
+
+runs:
+  using: "docker"
+  image: "Dockerfile"

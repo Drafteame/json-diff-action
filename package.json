@@ -1,0 +1,47 @@
+{
+  "name": "json-diff-action",
+  "type": "module",
+  "version": "0.0.0",
+  "description": "Simple action that compare the keys of different json files and return what keys are missing between each other",
+  "scripts": {
+    "lint": "npx eslint --fix .",
+    "format": "npx prettier --write .",
+    "test": "mocha ./tests/**/*.test.js",
+    "pre-commit": "pre-commit install --hook-type commit-msg"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Drafteame/json-diff-action.git"
+  },
+  "keywords": [
+    "github",
+    "action",
+    "json",
+    "encrypt",
+    "decrypt"
+  ],
+  "author": "Eduardo Aguilar <dante.aguilar@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Drafteame/json-diff-action/issues"
+  },
+  "homepage": "https://github.com/Drafteame/json-diff-action#readme",
+  "dependencies": {
+    "@actions/core": "^1.10.1",
+    "fs": "^0.0.1-security",
+    "lodash": "^4.17.21",
+    "path": "^0.12.7"
+  },
+  "devDependencies": {
+    "chai": "^4.3.10",
+    "eslint": "^8.52.0",
+    "eslint-config-airbnb-base": "^15.0.0",
+    "eslint-config-prettier": "^9.0.0",
+    "eslint-plugin-import": "^2.29.0",
+    "eslint-plugin-prettier": "^5.0.1",
+    "mocha": "^10.2.0",
+    "prettier": "^3.0.3",
+    "sinon": "^17.0.1",
+    "sinon-chai": "^3.7.0"
+  }
+}
