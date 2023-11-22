@@ -16,7 +16,13 @@ inputs:
     description: Regular expression used on search path to find desired files.
     required: false
     default: '\\.json$'
+  ignore_file:
+    description: Path to a specific ignore file configuration
+    required: false
+    default: '.json-diff-ignore.json'
 
 runs:
   using: "docker"
   image: "Dockerfile"
+
+
