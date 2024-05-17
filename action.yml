@@ -1,4 +1,5 @@
 name: "json-diff-action"
+
 description: "Check for differences between at least 2 json files and show what member is missing by each file."
 
 branding:
